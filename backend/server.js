@@ -1,0 +1,81 @@
+
+require('dotenv').config();
+
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+const path = require('path');
+
+const authRoutes = require('./routes/auth');
+const chatRoutes = require('./routes/chat');
+const uploadRoutes = require('./routes/upload');
+
+const app = express();
+
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+    credentials: true,
+  })
+);
+
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
+
+app.use(
+  session({
+    name: 'mh.sid',
+    secret: process.env.SESSION_SECRET || 'dev-secret-change-me',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      ttl: 60 * 60 * 24 * 7, 
+    }),
+    cookie: {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1000 * 60 * 60 * 24 * 7, 
+    },
+  })
+);
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.use('/api/auth', authRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/upload', uploadRoutes);
+
+
+app.use((err, _req, res, _next) => {
+  console.error('Server error:', err);
+  res.status(err.status || 500).json({ error: err.message || 'Server error' });
+});
+
+
+const PORT = process.env.PORT || 5000;
+
+mongoose
+  .connect(process.env.MONGO_URI ,{family: 4 })
+  .then(() => {
+    console.log('MongoDB connected');
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  })
+  .catch((err) => {
+    console.error(' MongoDB connection failed:', err.message);
+    process.exit(1);
+  });
