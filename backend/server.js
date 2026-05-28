@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === 'production') {
 app.use(
   session({
     name: 'mh.sid',
-    secret: process.env.SESSION_SECRET || 'dev-secret-change-me',
+    secret: process.env.SESSION_SECRET || 'sdfafdadfjnljkn',
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
@@ -55,10 +55,10 @@ app.use(
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
-app.use('/api/auth', authRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/upload', uploadRoutes);
+app.get('/health', (_req, res) => res.json({ ok: true }));
+app.use('/auth', authRoutes);
+app.use('/chat', chatRoutes);
+app.use('/upload', uploadRoutes);
 
 
 app.use((err, _req, res, _next) => {
