@@ -24,6 +24,7 @@ router.post('/register', async (req, res, next) => {
 
     
     req.session.userId = user._id.toString();
+    // the above line basically do the same work as the serlizer function do 
 
     res.status(201).json({ id: user._id, name: user.name, email: user.email });
   } catch (err) {
@@ -33,15 +34,17 @@ router.post('/register', async (req, res, next) => {
 
 
 router.post('/login', async (req, res, next) => {
+
   try {
+
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ error: 'email and password are required' });
     }
-
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-
+    
+     const user = await User.findOne({ email: email.toLowerCase() });
+     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+         
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
@@ -60,6 +63,7 @@ router.post('/logout', (req, res) => {
   });
 });
 
+// in the logout we change the server state so we use the post and it is a good practice 
 
 router.get('/me', requireAuth, async (req, res, next) => {
   try {
@@ -72,3 +76,5 @@ router.get('/me', requireAuth, async (req, res, next) => {
 });
 
 module.exports = router;
+
+

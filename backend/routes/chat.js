@@ -57,6 +57,7 @@ router.post('/', requireAuth, async (req, res, next) => {
       }
     }
 
+    
    
     await Message.create({
       userId: req.session.userId,

@@ -1,6 +1,5 @@
 
 require('dotenv').config();
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -34,7 +33,7 @@ if (process.env.NODE_ENV === 'production') {
 
 app.use(
   session({
-    name: 'mh.sid',
+    name: 'mh.sid', // this is basically a custom name of cookie bcoz it avoid confilict and when hacker see connect.sid they instanly get that we use express-session  but this just a good practice nothing else
     secret: process.env.SESSION_SECRET || 'sdfafdadfjnljkn',
     resave: false,
     saveUninitialized: false,
@@ -55,7 +54,7 @@ app.use(
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-app.get('/health', (_req, res) => res.json({ ok: true }));
+app.get('/health', (_req, res) => res.json({ ok: true })); // this is only for check that the server is running fine or not and _ means i am ignoring this parameter nothing happen without this just a good practice 
 app.use('/auth', authRoutes);
 app.use('/chat', chatRoutes);
 app.use('/upload', uploadRoutes);
@@ -70,7 +69,7 @@ app.use((err, _req, res, _next) => {
 const PORT = process.env.PORT || 5000;
 
 mongoose
-  .connect(process.env.MONGO_URI ,{family: 4 })
+  .connect(process.env.MONGO_URI ,{family: 4 }) 
   .then(() => {
     console.log('MongoDB connected');
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
@@ -78,4 +77,8 @@ mongoose
   .catch((err) => {
     console.error(' MongoDB connection failed:', err.message);
     process.exit(1);
+    // this is basically we tell nodejs stop the app bcoz db is not connect and we didnn't want to use app which have some feature crashed(all feature which are related to the db)
+    
   });
+
+  //  here family 4 means use ipv4 bcoz by default node.js use ipv6 which sometiime show an error so we avoid it 

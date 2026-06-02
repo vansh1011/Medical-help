@@ -8,6 +8,9 @@ import Chat from './pages/Chat';
 import Reports from './pages/Reports';
 
 export default function App() {
+
+
+  
   return (
     <div className="min-h-full">
       <Navbar />
