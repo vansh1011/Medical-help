@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Chat from './pages/Chat';
 import Reports from './pages/Reports';
+import NearestHospital from './pages/NearestHospital';
 
 export default function App() {
 
@@ -33,6 +34,14 @@ export default function App() {
                 <Chat />
               </ProtectedRoute>
             }
+          />
+          <Route 
+          path='/nearhospital'
+          element={
+            <ProtectedRoute>
+            <NearestHospital/>
+            </ProtectedRoute>
+          }
           />
           <Route
             path="/reports"
