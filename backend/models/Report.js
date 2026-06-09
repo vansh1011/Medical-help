@@ -1,22 +1,22 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const reportSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
       index: true,
     },
     originalName: { type: String, required: true },
-    storedName: { type: String, required: true }, 
     mimeType: { type: String, required: true },
     size: { type: Number, required: true },
-   
-    extractedText: { type: String, default: '' },
-    summary: { type: String, default: '' },
+    url: { type: String, required: true },
+
+    extractedText: { type: String, default: "" },
+    summary: { type: String, default: "" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-module.exports = mongoose.model('Report', reportSchema);
+module.exports = mongoose.model("Report", reportSchema);

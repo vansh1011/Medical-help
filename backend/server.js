@@ -51,7 +51,7 @@ app.use(
 );
 
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 
 app.get('/health', (_req, res) => res.json({ ok: true })); // this is only for check that the server is running fine or not and _ means i am ignoring this parameter nothing happen without this just a good practice 

@@ -1,61 +1,62 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const crypto = require('crypto');
-const pdfParse = require('pdf-parse');
-const Report = require('../models/Report');
-const requireAuth = require('../middleware/auth');
+const express = require("express");
+const multer = require("multer");
+const pdfParse = require("pdf-parse");
+const Report = require("../models/Report");
+const requireAuth = require("../middleware/auth");
+const cloudinary  = require("../configs/Cloudinary.js");
 
 const router = express.Router();
-
-
-const uploadDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-   
-    const unique = crypto.randomBytes(8).toString('hex');
-    cb(null, `${Date.now()}-${unique}${path.extname(file.originalname)}`);
-  },
-});
-
-const ALLOWED = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+const Allowed = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
 
 const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, 
-  fileFilter: (_req, file, cb) => {
-    if (!ALLOWED.includes(file.mimetype)) {
-      return cb(new Error('Only PDF, JPG, PNG, or WEBP files are allowed'));
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    if (Allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF and Images are allowed"));
     }
-    cb(null, true);
   },
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
+// Helper — returns correct cloudinary options based on mimetype
+const getCloudinaryOptions = (mimetype) => {
+  if (mimetype === "application/pdf") {
+    return { folder: "reports/pdfs", resource_type: "raw", format: "pdf" };
+  }
+  // images — jpeg, png, webp
+  return { folder: "reports/images", resource_type: "image" };
+};
 
-router.post('/', requireAuth, upload.single('file'), async (req, res, next) => {
+router.post("/", requireAuth, upload.single("file"), async (req, res, next) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-   
-    let extractedText = '';
-    if (req.file.mimetype === 'application/pdf') {
-      try {
-        const buffer = fs.readFileSync(req.file.path);
-        const parsed = await pdfParse(buffer);
-        extractedText = parsed.text || '';
-      } catch (e) {
-        console.warn('PDF parse failed:', e.message);
-      }
+    let extractedText = "";
+    if (req.file.mimetype === "application/pdf") {
+      const parsed = await pdfParse(req.file.buffer);
+      extractedText = parsed.text;
     }
+
+    // Upload with correct options based on file type
+    const CloudinaryResult = await new Promise((resolve, reject) => {
+      const options = getCloudinaryOptions(req.file.mimetype);
+      const stream = cloudinary.uploader.upload_stream(
+        options,
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        },
+      );
+      stream.end(req.file.buffer);
+    });
 
     const report = await Report.create({
       userId: req.session.userId,
       originalName: req.file.originalname,
-      storedName: req.file.filename,
+      url: CloudinaryResult.secure_url,
+      public_id: CloudinaryResult.public_id,
       mimeType: req.file.mimetype,
       size: req.file.size,
       extractedText,
@@ -66,7 +67,7 @@ router.post('/', requireAuth, upload.single('file'), async (req, res, next) => {
       originalName: report.originalName,
       mimeType: report.mimeType,
       size: report.size,
-      url: `/uploads/${report.storedName}`,
+      url: report.url,
       createdAt: report.createdAt,
     });
   } catch (err) {
@@ -74,11 +75,11 @@ router.post('/', requireAuth, upload.single('file'), async (req, res, next) => {
   }
 });
 
-router.get('/', requireAuth, async (req, res, next) => {
+router.get("/", requireAuth, async (req, res, next) => {
   try {
     const reports = await Report.find({ userId: req.session.userId })
       .sort({ createdAt: -1 })
-      .select('-extractedText') 
+      .select("-extractedText")
       .lean();
 
     res.json(
@@ -87,27 +88,28 @@ router.get('/', requireAuth, async (req, res, next) => {
         originalName: r.originalName,
         mimeType: r.mimeType,
         size: r.size,
-        url: `/uploads/${r.storedName}`,
+        url: r.url,
         createdAt: r.createdAt,
-      }))
+      })),
     );
   } catch (err) {
     next(err);
   }
 });
 
-
-router.delete('/:id', requireAuth, async (req, res, next) => {
+router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
+    // userId is not for uniqueness , it for security Report only be deleted when the _id and userId both known
     const report = await Report.findOneAndDelete({
       _id: req.params.id,
       userId: req.session.userId,
     });
-    if (!report) return res.status(404).json({ error: 'Report not found' });
+    if (!report) return res.status(404).json({ error: "Report not found" });
 
- 
-    const filePath = path.join(uploadDir, report.storedName);
-    fs.unlink(filePath, () => {});
+    const resource_type =
+      report.mimeType === "application/pdf" ? "raw" : "image";
+    await cloudinary.uploader.destroy(report.public_id, { resource_type });
+
     res.json({ ok: true });
   } catch (err) {
     next(err);

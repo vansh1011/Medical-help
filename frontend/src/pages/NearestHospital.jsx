@@ -122,6 +122,7 @@ function NearestHospital() {
             <button
               type="submit"
               disabled={loading}
+              // Prevent multiple click 
               className="px-5 py-2.5 bg-cyan-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition shadow-sm shadow-cyan-200"
             >
               {loading ? "Searching..." : "Find Hospitals"}
