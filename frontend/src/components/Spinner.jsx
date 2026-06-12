@@ -1,7 +1,7 @@
-export default function Spinner({ size = 5 }) {
+export default function Spinner() {
   return (
     <span
-      className={`inline-block h-${size} w-${size} animate-spin rounded-full border-2 border-brand-500 border-t-transparent`}
+      className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
       aria-label="Loading"
     />
   );
