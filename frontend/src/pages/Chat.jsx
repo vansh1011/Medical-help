@@ -23,6 +23,7 @@ export default function Chat() {
         toast.error("Failed to load chat");
       })
       .finally(() => setLoading(false));
+      
   }, []);
 
   useEffect(() => {
