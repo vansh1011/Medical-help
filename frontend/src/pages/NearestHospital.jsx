@@ -144,7 +144,7 @@ function NearestHospital() {
 
         {loading && (
           <div className="text-center text-slate-500 mt-10">
-            Loading nearby hospitals...
+            Loading... Public APIs can sometimes be a bit slow
           </div>
         )}
 
