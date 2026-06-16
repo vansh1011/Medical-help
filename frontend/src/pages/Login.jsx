@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
-import Spinner from '../components/Spinner';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
+import Spinner from "../components/Spinner";
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const [busy, setBusy] = useState(false);
@@ -21,29 +21,41 @@ export default function Login() {
 
     try {
       await login(form.email, form.password);
-      toast.success('Welcome back!');
-      navigate('/');
+      toast.success("Welcome back!");
+      navigate("/");
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Login failed');
+      toast.error(err.response?.data?.error || "Login failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleGuest = async () => {
+    setBusy(true);
+
+    try {
+      await login("guest@gmail.com", "Guest@1234");
+      toast.success("Welcome!");
+      navigate("/");
+    } catch (err) {
+      toast.error("Guest login failed");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-64px)] flex items-center justify-center px-4 overflow-hidden bg-slate-50">
-      
+    <div className="relative min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-6 overflow-hidden bg-slate-50">
       <div className="absolute top-10 left-10 w-72 h-72 bg-cyan-100 rounded-full blur-3xl opacity-40" />
       <div className="absolute bottom-10 right-10 w-72 h-72 bg-sky-100 rounded-full blur-3xl opacity-40" />
 
       <div className="relative w-full max-w-md">
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-slate-100 shadow-xl shadow-cyan-100 p-8">
-          
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-200">
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-slate-100 shadow-xl shadow-cyan-100 p-6">
+          <div className="flex flex-col items-center mb-5">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-200">
               <svg
-                width="28"
-                height="28"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="white"
@@ -55,37 +67,40 @@ export default function Login() {
               </svg>
             </div>
 
-            <h1 className="text-3xl font-bold mt-4">
+            <h1 className="text-2xl font-bold mt-3">
               <span className="text-slate-800">Medi</span>
               <span className="text-cyan-600">Q</span>
             </h1>
 
-            <h2 className="text-xl font-semibold text-slate-800 mt-5">
+            <h2 className="text-lg font-semibold text-slate-800 mt-3">
               Welcome Back
             </h2>
 
-            <p className="text-slate-500 text-center mt-2">
+            <p className="text-slate-500 text-center mt-2 text-sm">
               Sign in to access your medical dashboard and AI assistant.
             </p>
-
-            <div className="flex flex-wrap justify-center gap-2 mt-4">
-              <span className="px-3 py-1 text-xs rounded-full bg-cyan-50 text-cyan-700">
-                AI Assistant
-              </span>
-
-              <span className="px-3 py-1 text-xs rounded-full bg-cyan-50 text-cyan-700">
-                Medical Reports
-              </span>
-
-              <span className="px-3 py-1 text-xs rounded-full bg-cyan-50 text-cyan-700">
-                Nearby Hospitals
-              </span>
-            </div>
           </div>
 
-          <form onSubmit={onSubmit} className="space-y-5">
+          <button
+            onClick={handleGuest}
+            disabled={busy}
+     className="w-full mb-4 bg-rose-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-rose-700 transition-all duration-200 shadow-lg ">
+            {busy && <Spinner size={4} />}
+            Continue as Guest
+          </button>
+
+      
+          <div className="flex items-center mb-4">
+            <div className="flex-1 h-px bg-slate-200"></div>
+            <span className="px-3 text-xs font-medium text-slate-400">
+              OR
+            </span>
+            <div className="flex-1 h-px bg-slate-200"></div>
+          </div>
+
+          <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Email Address
               </label>
 
@@ -102,7 +117,7 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Password
               </label>
 
@@ -127,9 +142,9 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-5 text-center">
             <p className="text-sm text-slate-500">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <Link
                 to="/register"
                 className="font-semibold text-cyan-600 hover:text-cyan-700 hover:underline"

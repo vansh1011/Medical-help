@@ -3,8 +3,9 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
+
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout , login } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -28,6 +29,18 @@ export default function Navbar() {
         ? 'text-cyan-700 bg-cyan-50 font-semibold'
         : 'text-slate-600 hover:text-cyan-600 hover:bg-slate-50'
     }`;
+
+    const handleGuest = async () => {
+    
+
+    try {
+      await login("guest@gmail.com", "Guest@1234");
+      toast.success("Welcome!");
+      navigate("/");
+    } catch (err) {
+      toast.error("Guest login failed");
+    } 
+  };
 
   return (
     <nav className="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
@@ -77,12 +90,12 @@ export default function Navbar() {
             ) : (
               <>
                 <NavLink to="/login" className={linkClass}>Login</NavLink>
-                <NavLink
-                  to="/register"
+                <button
+                  onClick={handleGuest}
                   className="ml-1 px-4 py-2 text-sm rounded-lg bg-cyan-600 text-white font-medium hover:bg-cyan-700 transition-colors duration-200 shadow-sm shadow-cyan-200"
                 >
-                  Get Started
-                </NavLink>
+                  Guest
+                </button>
               </>
             )}
           </div>
@@ -174,13 +187,12 @@ export default function Navbar() {
                 >
                   Login
                 </NavLink>
-                <NavLink
-                  to="/register"
+                <button
                   className="block w-full px-3 py-2.5 text-base rounded-lg bg-cyan-600 text-white font-medium hover:bg-cyan-700 transition-colors text-center"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={handleGuest}
                 >
-                  Get Started
-                </NavLink>
+                  Guest
+                </button>
               </div>
             )}
           </div>
