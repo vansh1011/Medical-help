@@ -46,7 +46,7 @@ router.delete("/history", requireAuth, async (req, res, next) => {
 
 router.post("/", requireAuth, async (req, res, next) => {
   try {
-    console.log("this run");
+    
     const { content, reportId } = req.body;
     if (!content || !content.trim()) {
       return res.status(400).json({ error: "content is required" });

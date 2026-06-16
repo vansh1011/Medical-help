@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import api from "../api";
 import Spinner from "../components/Spinner";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from 'remark-gfm'
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
@@ -23,7 +25,6 @@ export default function Chat() {
         toast.error("Failed to load chat");
       })
       .finally(() => setLoading(false));
-      
   }, []);
 
   useEffect(() => {
@@ -95,12 +96,10 @@ export default function Chat() {
 
   return (
     <div className="relative h-[calc(100vh-7rem)]">
-      {/* Background Glow */}
       <div className="absolute top-10 left-10 w-72 h-72 bg-cyan-100 rounded-full blur-3xl opacity-30 pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-72 h-72 bg-sky-100 rounded-full blur-3xl opacity-30 pointer-events-none" />
 
       <div className="relative h-full bg-white rounded-3xl border border-slate-100 shadow-xl shadow-cyan-100 overflow-hidden flex flex-col">
-        {/* Header */}
         <header className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-cyan-50 to-white flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-200">
@@ -137,7 +136,6 @@ export default function Chat() {
           </button>
         </header>
 
-        {/* Messages */}
         <div
           ref={scrollerRef}
           className="flex-1 overflow-y-auto px-5 py-5 space-y-4 bg-slate-50/50"
@@ -154,8 +152,8 @@ export default function Chat() {
                 </h3>
 
                 <p className="text-slate-500 mt-2">
-                  Ask about symptoms, medications, diseases, health concerns,
-                  or attach a medical report for AI analysis.
+                  Ask about symptoms, medications, diseases, health concerns, or
+                  attach a medical report for AI analysis.
                 </p>
               </div>
             </div>
@@ -175,7 +173,9 @@ export default function Chat() {
                     : "bg-white border border-slate-200 text-slate-700 rounded-bl-md shadow-sm"
                 }`}
               >
-                {m.content}
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {String(m.content || "")}
+                </ReactMarkdown>
               </div>
             </div>
           ))}
@@ -190,7 +190,6 @@ export default function Chat() {
           )}
         </div>
 
-        {/* Footer */}
         <form
           onSubmit={send}
           className="border-t border-slate-100 bg-white p-4"
@@ -201,9 +200,7 @@ export default function Chat() {
               onChange={(e) => setReportId(e.target.value)}
               className="w-full mb-3 px-4 py-3 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
             >
-              <option value="">
-                📎 Attach a medical report (optional)
-              </option>
+              <option value="">📎 Attach a medical report (optional)</option>
 
               {reports.map((r) => (
                 <option key={r.id} value={r.id}>
